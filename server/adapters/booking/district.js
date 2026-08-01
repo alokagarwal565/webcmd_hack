@@ -12,6 +12,26 @@ function toHHMM(iso) {
   return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
 }
 
+// `--after`/`--before` are HH:MM time-of-day filters with no date component
+// (verified against `district showtimes --help`) — they cannot express a
+// multi-day range. Found live: a window spanning multiple calendar days
+// (e.g. Aug 1 11:04 -> Aug 10 10:05) produced `--after 11:04 --before
+// 10:05`, a reversed/impossible range that guaranteed zero matches on
+// every query regardless of any other filter. Only apply the filter when
+// start and end fall on the same UTC calendar date.
+function sameDayTimeRange(startIso, endIso) {
+  if (!startIso || !endIso) return { after: null, before: null };
+  const start = new Date(startIso);
+  const end = new Date(endIso);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return { after: null, before: null };
+  const sameDay =
+    start.getUTCFullYear() === end.getUTCFullYear() &&
+    start.getUTCMonth() === end.getUTCMonth() &&
+    start.getUTCDate() === end.getUTCDate();
+  if (!sameDay) return { after: null, before: null };
+  return { after: toHHMM(startIso), before: toHHMM(endIso) };
+}
+
 function parsePriceFloor(priceRange) {
   if (!priceRange) return null;
   const match = String(priceRange).match(/(\d+)/);
@@ -65,12 +85,19 @@ export function createDistrictAdapter() {
 
       for (const title of titles) {
         const args = [title, '--limit', '10'];
-        if (constraintSet.location) args.push('--city', constraintSet.location);
+        // Deliberately NOT passed as a hard --city/--cinema filter. Found
+        // live: `constraintSet.location` is populated from a participant's
+        // `preferred_location`, which is frequently a cinema/chain name
+        // ("PVR") rather than a city — `--city PVR` guaranteed zero
+        // matches on every query. The field's semantics aren't reliable
+        // enough to hard-filter on; `recommendationService`'s "convenience"
+        // dimension (§17.2) already scores venue/location relevance softly,
+        // which degrades gracefully instead of zeroing out every result on
+        // a bad guess.
         if (typeof constraintSet.max_price_per_seat === 'number') {
           args.push('--max-price', String(constraintSet.max_price_per_seat));
         }
-        const after = toHHMM(firstWindow?.start);
-        const before = toHHMM(firstWindow?.end);
+        const { after, before } = sameDayTimeRange(firstWindow?.start, firstWindow?.end);
         if (after) args.push('--after', after);
         if (before) args.push('--before', before);
 
