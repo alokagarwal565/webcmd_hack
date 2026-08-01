@@ -2,6 +2,7 @@ import express from 'express';
 import { config } from './config.js';
 import { healthRouter } from './routes/health.js';
 import { sessionsRouter } from './routes/sessions.js';
+import { participantsRouter } from './routes/participants.js';
 import { requestId } from './middleware/requestId.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -15,6 +16,7 @@ app.get('/', (req, res) => {
 
 app.use('/api', healthRouter);
 app.use('/api', sessionsRouter);
+app.use('/api/sessions/:shareToken/participants', participantsRouter);
 
 if (config.NODE_ENV !== 'production') {
   app.get('/api/_throw', () => {

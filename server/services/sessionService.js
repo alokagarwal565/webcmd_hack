@@ -1,5 +1,15 @@
 import { pool } from '../db/pool.js';
 import { generateToken } from '../lib/tokens.js';
+import { AppError } from '../lib/AppError.js';
+
+function toPublicParticipant(row) {
+  return {
+    id: row.id,
+    sessionId: row.session_id,
+    displayName: row.display_name,
+    joinedAt: row.joined_at,
+  };
+}
 
 // The projection returned by every read endpoint. organizer_token is
 // deliberately absent — it is issued once, at creation, and never again
@@ -35,6 +45,28 @@ export async function createSession({ title, activityType, city, dateFrom, dateT
 export async function getSessionByShareToken(shareToken) {
   const { rows } = await pool.query('SELECT * FROM sessions WHERE share_token = $1', [shareToken]);
   return rows[0] ?? null;
+}
+
+// Join by link with a display name (FR-1.3/1.4). Duplicate names are allowed —
+// real groups have two Rahuls — participants are distinguished by token, not name.
+export async function joinSession(shareToken, displayName) {
+  const session = await getSessionByShareToken(shareToken);
+  if (!session) {
+    throw new AppError('SESSION_NOT_FOUND', 'No session matches this link.', 404);
+  }
+  if (session.status === 'booked') {
+    throw new AppError('INVALID_STATE', 'This session has already been booked.', 409);
+  }
+
+  const participantToken = generateToken();
+  const { rows } = await pool.query(
+    `INSERT INTO participants (session_id, display_name, participant_token)
+     VALUES ($1, $2, $3)
+     RETURNING *`,
+    [session.id, displayName, participantToken]
+  );
+
+  return { participant: toPublicParticipant(rows[0]), participantToken };
 }
 
 function toPublicConsensus(row) {
