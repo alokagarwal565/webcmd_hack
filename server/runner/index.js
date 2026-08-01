@@ -1,25 +1,77 @@
+import { pool } from '../db/pool.js';
 import { logger } from '../lib/logger.js';
+import { AppError } from '../lib/AppError.js';
 import { claimNextJob } from './claim.js';
 import { sweepStuckJobs, transitionJob, logJobEvent } from '../services/jobService.js';
+import { selectSeats } from './steps/selectSeats.js';
+import { runCheckout } from './steps/checkout.js';
 
 const POLL_INTERVAL_MS = 2000;
 
-// Placeholder execution step — replaced by the real seat-selection/checkout
-// pipeline in P3-T4/T5/T6. Exists now so P3-T1's claim → run → free-the-queue
-// cycle is independently testable before any webcmd automation exists.
-async function executeJob(job) {
-  await logJobEvent(job.id, {
-    step: 'placeholder',
-    level: 'info',
-    message: 'No execution steps wired yet (arrives in P3-T4/T5/T6).',
-  });
-  await transitionJob(job.id, { status: 'succeeded', currentStep: 'placeholder' });
+async function getOptionById(optionId) {
+  const { rows } = await pool.query('SELECT * FROM options WHERE id = $1', [optionId]);
+  return rows[0] ?? null;
 }
 
-async function tick() {
+async function getLatestConsensus(sessionId) {
+  const { rows } = await pool.query(
+    'SELECT * FROM consensus WHERE session_id = $1 ORDER BY created_at DESC LIMIT 1',
+    [sessionId]
+  );
+  return rows[0] ?? null;
+}
+
+// The real pipeline: fetch the approved option + the group's constraint set,
+// select seats against the §18.3 ladder, then carry to checkout (§14.4).
+// P3-T6 wraps this with the whoami/login check and OTP/CAPTCHA detection
+// (the `awaiting_human` pause) — not yet present here.
+async function executeJob(job) {
+  const option = await getOptionById(job.option_id);
+  if (!option) {
+    throw new AppError('VALIDATION_FAILED', `Job ${job.id} references a missing option ${job.option_id}.`, 400);
+  }
+
+  const consensus = await getLatestConsensus(job.session_id);
+  if (!consensus?.constraint_set) {
+    // A real product-flow gap, not a webcmd/automation failure: no
+    // aggregation has run for this session yet, so there is no constraint
+    // set to book against. Fails clearly rather than fabricating one.
+    throw new AppError(
+      'INVALID_STATE',
+      `No consensus/constraint set found for session ${job.session_id}; run aggregation before booking.`,
+      409
+    );
+  }
+
+  const bookingOption = { raw: option.raw };
+  const constraintSet = consensus.constraint_set;
+
+  const { seats } = await selectSeats(job, bookingOption, constraintSet);
+  await logJobEvent(job.id, {
+    step: 'select_seats',
+    level: 'info',
+    message: `Seats selected: ${seats.join(', ')}`,
+  });
+
+  await runCheckout(job, bookingOption, seats);
+}
+
+export async function tick() {
   const job = await claimNextJob();
   if (!job) return;
-  await executeJob(job);
+
+  try {
+    await executeJob(job);
+  } catch (err) {
+    // A thrown step must not leave the job stuck in `running` until the
+    // 10-minute stuck-sweep catches it — classified failures (SEATS_
+    // UNAVAILABLE, ADAPTER_MISMATCH, etc.) surface to the human immediately.
+    const code = err instanceof AppError ? err.code : 'INTERNAL_ERROR';
+    const message = err.message || 'Unclassified automation failure.';
+    await logJobEvent(job.id, { step: job.current_step, level: 'error', message });
+    await transitionJob(job.id, { status: 'failed', errorCode: code, errorMessage: message });
+    logger.error({ event: 'runner.job_failed', jobId: job.id, code, message });
+  }
 }
 
 // Started in-process from server/index.js for now (§ P3-T1 notes) — Phase 5

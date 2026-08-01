@@ -61,6 +61,19 @@ export async function logJobEvent(jobId, { step, level = 'info', message, screen
   );
 }
 
+// §10.2 M6 — the ticket record. bookingDetails is the district `checkout`
+// response verbatim (§14.1's documented columns), so a failed booking can be
+// debugged against exactly what the provider returned.
+export async function createTicket({ sessionId, jobId, bookingDetails, totalAmount, paymentState }) {
+  const { rows } = await pool.query(
+    `INSERT INTO tickets (session_id, job_id, booking_details, total_amount, payment_state)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING *`,
+    [sessionId, jobId, bookingDetails, totalAmount, paymentState]
+  );
+  return rows[0];
+}
+
 export async function getJobEvents(jobId) {
   const { rows } = await pool.query(
     'SELECT * FROM job_events WHERE job_id = $1 ORDER BY created_at',
