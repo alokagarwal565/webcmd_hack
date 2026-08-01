@@ -1,0 +1,13 @@
+{
+  "name": "seatsync-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch index.js",
+    "db:apply": "node db/applySchema.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
+  }
+}
