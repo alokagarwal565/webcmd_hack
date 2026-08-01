@@ -2399,31 +2399,31 @@ Index of every task in Section 32, in execution order. **Update the Status colum
 **Overall progress**
 
 ```
-Total tasks: 47        ██████░░░░░░░░░░░░░░  14/47  (30%)
+Total tasks: 47        █████████░░░░░░░░░░░  20/47  (43%)
 ```
 
 | Dashboard | Value |
 |---|---|
-| **Overall progress** | **14 / 47 tasks** (30%) |
-| **`[CORE]` critical path** | **12 / 21 tasks** (57%) — *the booking demo* |
-| **MVP completion (P0–P3)** | **14 / 28 tasks** (50%) |
+| **Overall progress** | **20 / 47 tasks** (43%) |
+| **`[CORE]` critical path** | **16 / 21 tasks** (76%) — *the booking demo* |
+| **MVP completion (P0–P3)** | **20 / 28 tasks** (71%) |
 | **Stretch completion (P4–P7)** | **0 / 19 tasks** (0%) |
-| **Current phase** | **P1 — Coordination** (Branch A, `feat/coordination-automation`, in progress) — **P2 — Intelligence already complete**, built in parallel on Branch B (`feat/intelligence`) and merged to `main` at commit `d9d4a1c` |
-| **Next task** | **P1-T1** — Token utilities & session creation (Branch A) · Branch B's next task after merge is **P3-T1** (job creation, the integration point that calls `aggregationService`/`recommendationService`) |
-| **Remaining `[CORE]` time** | **~2 h 20 m** (P1 core + P3 core) |
-| **Remaining MVP time** | **~3 h 40 m** (P1 + P3) |
-| **Remaining total** | **~7 h 42 m** |
-| **Demo readiness** | 🟡 **Services ready, not yet wired** — Phase 2's services exist and are fully tested, but nothing calls them until Branch A's P1 (sessions/preferences) lands and P3-T1 merges the two branches |
+| **Current phase** | **P3 — Automation** (Branch A, `alok-new`) — **P0, P1, P2 all complete and merged to `main`** at commit `3c724b5` |
+| **Next task** | **P3-T1** — Job queue & single-claim Runner loop (Branch A) — the integration point that calls Branch B's `aggregationService`/`recommendationService` directly, now that both branches are merged |
+| **Remaining `[CORE]` time** | **~1 h 27 m** (P2-T8's UI half + P3 core) |
+| **Remaining MVP time** | **~2 h 4 m** (P2-T8's UI half + all of P3) |
+| **Remaining total** | **~6 h 0 m** |
+| **Demo readiness** | 🟠 **Coordination demo ready** — a real group can create a session, join, submit preferences, and watch a live lobby end-to-end (verified in a real browser via `webcmd`, not just code review). Intelligence services exist and are tested but not yet wired to the UI; booking automation (P3) not yet started |
 
-> **Note on parallel branches:** this plan assumes strictly sequential phase execution, but the actual build split Phase 1 + Phase 3 (Branch A) from Phase 2 (Branch B) to run in parallel after P0. The Status columns below reflect actual repo state on `main`, not execution order — P2 is fully ✅ while P1/P3 are still ⬜, which the ladder below can't express as a single "current phase." See the branch-split rationale recorded in conversation context: Branch A owns sessions/jobs/UI; Branch B owns the LLM/booking-read/scoring services as pure functions; they meet at P3-T1.
+> **Note on parallel branches (resolved):** Phase 1 (Branch A, `alok-new`) and Phase 2 (Branch B) were built in parallel after P0, then merged with **zero file conflicts** — the branch split held exactly as designed: Branch A owned sessions/participants/preferences/jobs/UI, Branch B owned the LLM/booking-read/scoring services as pure functions with no route wiring. `main` now reflects P0+P1+P2 combined. Branch A continues alone into Phase 3, calling Branch B's services directly.
 
 **Demo-readiness ladder** — the honest answer to "can we present right now?"
 
 | Gate | Requires | Status | What you can claim |
 |---|---|---|---|
 | 🔴 **Nothing** | — | — | — |
-| 🟠 **Coordination demo** | P1-T7 | ⬜ | "Share one link; preferences collected privately" |
-| 🟡 **Intelligence demo** | P2-T8 | ✅ *(services only — not yet reachable via API/UI, pending Branch A's P1 + the P3-T1 merge)* | "AI reconciled the group and found real showtimes" |
+| 🟠 **Coordination demo** | P1-T7 | ✅ | "Share one link; preferences collected privately" |
+| 🟡 **Intelligence demo** | P2-T8 | 🟡 *(services done, tested; `ConsensusView.jsx`/`OptionCard.jsx` UI still open — lands as part of P3's UI work or a follow-up)* | "AI reconciled the group and found real showtimes" |
 | 🟢 **Full demo** | P3-T7 | ▶ **current target** | **"It books a real ticket."** 🎯 |
 | 🔵 **Hardened demo** | P7-T4 | ⬜ | "…and it works offline" |
 
@@ -2433,7 +2433,7 @@ Total tasks: 47        ██████░░░░░░░░░░░░░
 |---|---|---|
 | R1 District login expires | ⬜ Unverified | Run `webcmd district whoami` before demoing |
 | R2 Adapter breaks | 🟡 **Partially mitigated** | P2-T7 shipped a fixture adapter (`BOOKING_PROVIDER=fixture`) early as the read-provider's demo-safe fallback; full P7-T4 fixture-mode coverage (booking/checkout side) still open |
-| R3 Time overrun | 🟢 Resolved for P2 | Phase 2 complete; remaining exposure is now P1/P3 on Branch A |
+| R3 Time overrun | 🟢 Resolved for P0–P2 | P0/P1/P2 complete; remaining exposure is P3 (Branch A) |
 | R14 Demo network failure | 🟡 **Partially mitigated** | Same fixture adapter as R2 — `district search`/`showtimes` reads can run offline; live booking automation (P3) still requires the real site |
 
 ### 33.2 Task index
@@ -2456,13 +2456,13 @@ Total tasks: 47        ██████░░░░░░░░░░░░░
 
 | Task | Title | Wave | Pri | ETA | Deps | Status |
 |---|---|---|---|---|---|---|
-| P1-T1 | Token utilities & session creation | `[CORE]` | P1 | 15m | P0-T6 | ⬜ |
-| P1-T2 | Session read endpoint | `[CORE]` | P1 | 15m | P1-T1 | ⬜ |
-| P1-T3 | Participant join | `[MVP]` | P1 | 10m | P1-T2 | ⬜ |
-| P1-T4 | Preference & availability submission | `[CORE]` | P1 | 18m | P1-T3 | ⬜ |
-| P1-T5 | Create-session and join UI | `[CORE]` | P1 | 15m | P1-T1, P1-T3 | ⬜ |
-| P1-T6 | Preference form UI | `[MVP]` | P1 | 18m | P1-T4, P1-T5 | ⬜ |
-| P1-T7 | Live lobby with polling | `[CORE]` | P1 | 15m | P1-T2, P1-T6 | ⬜ |
+| P1-T1 | Token utilities & session creation | `[CORE]` | P1 | 15m | P0-T6 | ✅ |
+| P1-T2 | Session read endpoint | `[CORE]` | P1 | 15m | P1-T1 | ✅ |
+| P1-T3 | Participant join | `[MVP]` | P1 | 10m | P1-T2 | ✅ |
+| P1-T4 | Preference & availability submission | `[CORE]` | P1 | 18m | P1-T3 | ✅ |
+| P1-T5 | Create-session and join UI | `[CORE]` | P1 | 15m | P1-T1, P1-T3 | ✅ *(also added a locked-origin CORS middleware to `server/index.js` — required for the `:5173`/`:3000` dev split in §8.1 to work at all; no card covered it)* |
+| P1-T6 | Preference form UI | `[MVP]` | P1 | 18m | P1-T4, P1-T5 | ✅ *(also added `GET /api/sessions/:shareToken/preferences`, participant-token-scoped — needed for "existing submission pre-fills," not in §11.2's table)* |
+| P1-T7 | Live lobby with polling | `[CORE]` | P1 | 15m | P1-T2, P1-T6 | ✅ |
 
 #### PHASE 2 — Intelligence `[CORE]` · 129 min
 
