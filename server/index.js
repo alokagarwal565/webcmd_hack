@@ -6,6 +6,7 @@ import { participantsRouter } from './routes/participants.js';
 import { preferencesRouter } from './routes/preferences.js';
 import { requestId } from './middleware/requestId.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { startRunner } from './runner/index.js';
 
 const app = express();
 app.use(express.json());
@@ -46,3 +47,5 @@ app.use(errorHandler);
 app.listen(config.PORT, () => {
   console.log(`SeatSync API listening on :${config.PORT}`);
 });
+
+startRunner();
