@@ -14,6 +14,8 @@
     transform var(--duration-fast) var(--ease-out),
     box-shadow var(--duration-fast) var(--ease-out);
   min-height: 44px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .ui-button:active:not(:disabled) {

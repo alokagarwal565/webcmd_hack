@@ -90,7 +90,11 @@ function toPublicOption(row) {
     venue: row.venue,
     showTime: row.show_time,
     price: row.price,
-    score: row.score,
+    // Postgres `numeric` columns come back from `pg` as strings (to avoid
+    // silent precision loss) — coerced to a real number here so the UI's
+    // `typeof score === 'number'` check doesn't fail and render "—" instead
+    // of the actual score.
+    score: row.score !== null && row.score !== undefined ? Number(row.score) : null,
     reasoning: row.reasoning,
     rank: row.rank,
     recommended: row.rank === 1,

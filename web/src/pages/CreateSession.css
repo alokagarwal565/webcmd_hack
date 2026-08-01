@@ -36,6 +36,16 @@
   align-items: flex-end;
 }
 
+.create-session-share-row > *:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.create-session-share-row .ui-button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .create-session-caption {
   margin-top: var(--space-3);
   font-size: var(--text-xs);
