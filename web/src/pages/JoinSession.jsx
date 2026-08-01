@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { apiClient } from '../lib/apiClient.js';
 import { getParticipant, saveParticipant } from '../lib/storage.js';
 
@@ -66,9 +66,14 @@ export default function JoinSession() {
       {detail.session.city && <p>{detail.session.city}</p>}
 
       {participant ? (
-        <p>
-          Welcome back, <strong>{participant.displayName}</strong>. You're in.
-        </p>
+        <>
+          <p>
+            Welcome back, <strong>{participant.displayName}</strong>. You're in.
+          </p>
+          <p>
+            <Link to={`/s/${shareToken}/lobby`}>Go to the lobby</Link>
+          </p>
+        </>
       ) : (
         <form onSubmit={handleJoin}>
           <div style={{ marginBottom: '1rem' }}>

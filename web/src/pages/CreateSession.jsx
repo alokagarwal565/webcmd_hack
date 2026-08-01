@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { apiClient } from '../lib/apiClient.js';
 import { saveOrganizerToken } from '../lib/storage.js';
 
@@ -49,6 +50,9 @@ export default function CreateSession() {
         </div>
         <p style={{ color: '#666', fontSize: '0.9rem' }}>
           Keep this browser/device — your organizer access lives here only.
+        </p>
+        <p>
+          <Link to={`/s/${result.shareToken}/lobby`}>Go to the lobby</Link>
         </p>
       </div>
     );
