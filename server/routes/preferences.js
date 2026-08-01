@@ -5,6 +5,7 @@ import { getSessionByShareToken } from '../services/sessionService.js';
 import {
   getParticipantByToken,
   submitPreferences,
+  getOwnPreferences,
   assertOwnParticipant,
 } from '../services/preferenceService.js';
 import { AppError } from '../lib/AppError.js';
@@ -68,6 +69,23 @@ preferencesRouter.put('/', validate(preferencesSchema), async (req, res, next) =
 
     await submitPreferences(participant.id, { ...req.body, availabilityWindows: windows });
     res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+preferencesRouter.get('/', async (req, res, next) => {
+  try {
+    const session = await getSessionByShareToken(req.params.shareToken);
+    if (!session) {
+      throw new AppError('SESSION_NOT_FOUND', 'No session matches this link.', 404);
+    }
+
+    const participant = await getParticipantByToken(req.headers['x-participant-token']);
+    assertOwnParticipant(participant, session);
+
+    const preferences = await getOwnPreferences(participant.id);
+    res.json({ preferences });
   } catch (err) {
     next(err);
   }

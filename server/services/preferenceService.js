@@ -73,6 +73,35 @@ export async function submitPreferences(participantId, payload) {
   }
 }
 
+// Not in §11.2's endpoint table, but required for P1-T6's "an existing
+// submission pre-fills" acceptance criterion — a participant reloading the
+// form needs their own prior values back. Scoped to the caller's own token,
+// same privacy boundary as the PUT (never another participant's data).
+export async function getOwnPreferences(participantId) {
+  const prefResult = await pool.query('SELECT * FROM preferences WHERE participant_id = $1', [
+    participantId,
+  ]);
+  if (prefResult.rows.length === 0) return null;
+
+  const pref = prefResult.rows[0];
+  const windowsResult = await pool.query(
+    'SELECT start_ts, end_ts FROM availability_windows WHERE preference_id = $1 ORDER BY start_ts',
+    [pref.id]
+  );
+
+  return {
+    budgetCeiling: pref.budget_ceiling,
+    seatClass: pref.seat_class,
+    seatsTogether: pref.seats_together,
+    preferredLocation: pref.preferred_location,
+    notes: pref.notes,
+    availabilityWindows: windowsResult.rows.map((w) => ({
+      start: w.start_ts,
+      end: w.end_ts,
+    })),
+  };
+}
+
 export function assertOwnParticipant(participant, session) {
   if (!participant) {
     throw new AppError('INVALID_TOKEN', 'Missing or invalid participant token.', 403);
