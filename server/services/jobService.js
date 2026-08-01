@@ -57,7 +57,13 @@ export async function transitionJob(jobId, { status, currentStep, humanActionNee
       humanActionNeeded ?? null,
       errorCode ?? null,
       errorMessage ?? null,
-      result ?? null,
+      // Explicit stringify, and only when a value is actually given —
+      // `pg` does not reliably auto-serialize jsonb parameters for a
+      // top-level array (verified live; see saveConsensus's comment in
+      // sessionService.js for the full finding). Passing SQL NULL (not the
+      // string "null") when no result is given preserves COALESCE's
+      // skip-if-not-provided behavior above.
+      result != null ? JSON.stringify(result) : null,
     ]
   );
   const after = rows[0];
@@ -82,7 +88,7 @@ export async function createTicket({ sessionId, jobId, bookingDetails, totalAmou
     `INSERT INTO tickets (session_id, job_id, booking_details, total_amount, payment_state)
      VALUES ($1, $2, $3, $4, $5)
      RETURNING *`,
-    [sessionId, jobId, bookingDetails, totalAmount, paymentState]
+    [sessionId, jobId, JSON.stringify(bookingDetails), totalAmount, paymentState]
   );
   return rows[0];
 }

@@ -172,9 +172,21 @@ export async function getParticipantsForAggregation(sessionId) {
   });
 }
 
-// Persists aggregationService's reconcile() result. `pg` JSON-serializes
-// plain objects/arrays passed as query parameters automatically for jsonb
-// columns — no manual JSON.stringify (which would double-encode).
+// Persists aggregationService's reconcile() result.
+//
+// Verified live (2026-08-01, real DeepSeek call): `pg` does NOT reliably
+// auto-serialize a plain JS value passed as a jsonb query parameter — a
+// top-level OBJECT gets JSON.stringify'd correctly, but a top-level ARRAY is
+// instead formatted as a Postgres array literal (`{...}`, comma-separated,
+// per-element quoting), which is not valid JSON and fails with "invalid
+// input syntax for type json" — reproduced with a minimal
+// `pool.query('INSERT ... VALUES ($1)', [[{a:1}]])` against a bare jsonb
+// column, independent of any string content. `conflicts` is a top-level
+// array (`reconcile()` always returns one), so it hit this exactly; the
+// object-shaped `constraint_set`/`intersection` params happened to work by
+// accident of shape, not because the assumption was correct. Every jsonb
+// parameter is explicitly `JSON.stringify`-ed below so no future caller can
+// reintroduce this by passing an array-shaped value.
 export async function saveConsensus(
   sessionId,
   { constraint_set, conflicts, intersection, llm_provider_used, summary, llm_unavailable }
@@ -182,7 +194,15 @@ export async function saveConsensus(
   const { rows } = await pool.query(
     `INSERT INTO consensus (session_id, constraint_set, conflicts, intersection, llm_provider_used, summary, llm_unavailable)
      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-    [sessionId, constraint_set, conflicts, intersection, llm_provider_used, summary ?? null, Boolean(llm_unavailable)]
+    [
+      sessionId,
+      JSON.stringify(constraint_set),
+      JSON.stringify(conflicts),
+      JSON.stringify(intersection),
+      llm_provider_used,
+      summary ?? null,
+      Boolean(llm_unavailable),
+    ]
   );
   return toPublicConsensus(rows[0]);
 }
@@ -222,7 +242,9 @@ export async function saveOptions(sessionId, scoredOptions) {
           opt.venue,
           opt.showTime,
           opt.price,
-          { ...opt.raw, scoreBreakdown: opt.scoreBreakdown, disqualified: Boolean(opt.disqualified) },
+          // Explicit stringify — see saveConsensus's comment on why `pg`
+          // cannot be trusted to auto-serialize jsonb parameters.
+          JSON.stringify({ ...opt.raw, scoreBreakdown: opt.scoreBreakdown, disqualified: Boolean(opt.disqualified) }),
           opt.score,
           opt.reasoning ?? null,
           eligible ? rank : null,
