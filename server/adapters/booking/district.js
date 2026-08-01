@@ -38,12 +38,34 @@ function parsePriceFloor(priceRange) {
   return match ? Number(match[1]) : null;
 }
 
+// `showtimes`'s `time` field is 12-hour with an am/pm suffix (verified live:
+// "04:25 pm", "11:15 pm") — NOT the 24-hour "HH:MM" this file previously
+// assumed. Naively concatenating it into an ISO template produced strings
+// like "2026-08-01T11:15 pm:00", which Postgres rejected outright with
+// "invalid input syntax for type timestamp with time zone" on every single
+// option, found live while saving a real `options/refresh` result. Returns
+// null (never a malformed string) when the input doesn't match the
+// expected shape, so a future format change fails closed instead of
+// silently corrupting a timestamp.
+function parseTimeTo24h(timeStr) {
+  const match = /^(\d{1,2}):(\d{2})\s*(am|pm)$/i.exec(String(timeStr ?? '').trim());
+  if (!match) return null;
+  let hour = Number(match[1]);
+  const minute = Number(match[2]);
+  const meridiem = match[3].toLowerCase();
+  if (hour < 1 || hour > 12 || minute > 59) return null;
+  if (meridiem === 'pm' && hour !== 12) hour += 12;
+  if (meridiem === 'am' && hour === 12) hour = 0;
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
 function normalizeShowtime(row) {
+  const hhmm = parseTimeTo24h(row.time);
   return {
     externalId: row.showId ?? row.url ?? null,
     title: row.movie ?? null,
     venue: row.cinema ?? null,
-    showTime: row.date && row.time ? `${row.date}T${row.time}:00` : null,
+    showTime: row.date && hhmm ? `${row.date}T${hhmm}:00` : null,
     price: parsePriceFloor(row.priceRange),
     // Full provider response retained (§10.2) — a re-ranking never needs a
     // second network call, and a failed booking can be debugged against
