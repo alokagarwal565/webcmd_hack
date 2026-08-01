@@ -1,0 +1,77 @@
+{
+  "_provenance": "HAND-BUILT, NOT a live capture. `district showtimes` is a browser-backed command (Browser: yes) and consistently returned HTTP 400 in this sandbox regardless of parameters, while every non-browser read command (search, locations, listings) worked live and was captured verbatim into search.movies.json / listings.movies.json in this same directory. This file's shape is transcribed exactly from the VERIFIED output columns documented by `webcmd district showtimes --help` (§14.1 of the implementation plan: rank, movie, language, date, time, cinema, format, priceRange, available, showId, formatId, url) so the fixture adapter and recommendationService have realistic, schema-correct data to run against offline. Treat the column NAMES as verified and the row VALUES as synthetic.",
+  "Spider-Man: Brand New Day": [
+    {
+      "rank": 1,
+      "movie": "Spider-Man: Brand New Day",
+      "language": "English",
+      "date": "2026-08-07",
+      "time": "19:00",
+      "cinema": "PVR Forum Mall, Koramangala",
+      "format": "2D",
+      "priceRange": "220 - 350",
+      "available": true,
+      "showId": "ST-SM-001",
+      "formatId": "FMT-2D",
+      "url": "https://www.district.in/movies/spider-man-brand-new-day-movie-tickets-MV194537"
+    },
+    {
+      "rank": 2,
+      "movie": "Spider-Man: Brand New Day",
+      "language": "English",
+      "date": "2026-08-07",
+      "time": "21:30",
+      "cinema": "INOX Garuda Mall, Magrath Road",
+      "format": "IMAX 3D",
+      "priceRange": "380 - 550",
+      "available": true,
+      "showId": "ST-SM-002",
+      "formatId": "FMT-IMAX3D",
+      "url": "https://www.district.in/movies/spider-man-brand-new-day-movie-tickets-MV194537"
+    },
+    {
+      "rank": 3,
+      "movie": "Spider-Man: Brand New Day",
+      "language": "Hindi",
+      "date": "2026-08-07",
+      "time": "20:15",
+      "cinema": "PVR Orion Mall, Rajajinagar",
+      "format": "2D",
+      "priceRange": "250 - 300",
+      "available": true,
+      "showId": "ST-SM-003",
+      "formatId": "FMT-2D",
+      "url": "https://www.district.in/movies/spider-man-brand-new-day-movie-tickets-MV194537"
+    }
+  ],
+  "Bhai Tera Star Hai": [
+    {
+      "rank": 1,
+      "movie": "Bhai Tera Star Hai",
+      "language": "Hindi",
+      "date": "2026-08-07",
+      "time": "18:45",
+      "cinema": "Cinepolis Nexus Mall, Koramangala",
+      "format": "2D",
+      "priceRange": "180 - 260",
+      "available": true,
+      "showId": "ST-BTS-001",
+      "formatId": "FMT-2D",
+      "url": "https://www.district.in/movies/bhai-tera-star-hai-movie-tickets-MV227342"
+    },
+    {
+      "rank": 2,
+      "movie": "Bhai Tera Star Hai",
+      "language": "Hindi",
+      "date": "2026-08-07",
+      "time": "22:00",
+      "cinema": "PVR Forum Mall, Koramangala",
+      "format": "4DX",
+      "priceRange": "420 - 500",
+      "available": true,
+      "showId": "ST-BTS-002",
+      "formatId": "FMT-4DX",
+      "url": "https://www.district.in/movies/bhai-tera-star-hai-movie-tickets-MV227342"
+    }
+  ]
+}
