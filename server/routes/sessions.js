@@ -14,6 +14,7 @@ import {
 } from '../services/sessionService.js';
 import { reconcile } from '../services/aggregationService.js';
 import { recommend } from '../services/recommendationService.js';
+import { getTicketBySession } from '../services/jobService.js';
 import { tokensMatch } from '../lib/tokens.js';
 import { AppError } from '../lib/AppError.js';
 
@@ -129,6 +130,17 @@ sessionsRouter.post('/sessions/:shareToken/options/refresh', async (req, res, ne
     await saveOptions(session.id, options);
     const saved = await getOptions(session.id);
     res.json({ options: saved, binding });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Public (§11.2) — the whole group sees the stored ticket, not just the organizer.
+sessionsRouter.get('/sessions/:shareToken/ticket', async (req, res, next) => {
+  try {
+    const session = await requireSession(req.params.shareToken);
+    const ticket = await getTicketBySession(session.id);
+    res.json({ ticket });
   } catch (err) {
     next(err);
   }

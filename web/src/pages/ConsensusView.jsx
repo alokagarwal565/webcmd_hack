@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../lib/apiClient.js';
 import { useSessionPoll } from '../hooks/useSessionPoll.js';
 import { getOrganizerToken } from '../lib/storage.js';
@@ -13,6 +13,7 @@ import OptionCard from '../components/OptionCard.jsx';
 // POST endpoints that produce fresher rows for the next poll tick to pick up.
 export default function ConsensusView() {
   const { shareToken } = useParams();
+  const navigate = useNavigate();
   const { data, loading, error, refetch } = useSessionPoll(shareToken, 3000);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState(null);
@@ -28,9 +29,10 @@ export default function ConsensusView() {
     );
   }
 
-  const { session, consensus, options } = data;
+  const { session, consensus, options, activeJob } = data;
   const organizerToken = getOrganizerToken(session.id);
   const isOrganizer = Boolean(organizerToken);
+  const recommendedOption = options?.find((o) => o.recommended);
 
   async function runAggregate() {
     setBusy(true);
@@ -54,6 +56,24 @@ export default function ConsensusView() {
     } catch (err) {
       setActionError(err.message);
     } finally {
+      setBusy(false);
+    }
+  }
+
+  // The only irreversible transition in the product (§15.2) — approving the
+  // recommended option enqueues a real automation job.
+  async function approveBooking() {
+    setBusy(true);
+    setActionError(null);
+    try {
+      const { job } = await apiClient.post(
+        `/api/sessions/${shareToken}/book`,
+        { optionId: recommendedOption.id },
+        { organizerToken }
+      );
+      navigate(`/s/${shareToken}/jobs/${job.id}`);
+    } catch (err) {
+      setActionError(err.message);
       setBusy(false);
     }
   }
@@ -142,7 +162,17 @@ export default function ConsensusView() {
       {isOrganizer && options?.some((o) => o.recommended) && (
         <div style={{ marginTop: '1.5rem', borderTop: '1px solid #ddd', paddingTop: '1rem' }}>
           <p style={{ color: '#666', fontSize: '0.9rem' }}>Organizer controls</p>
-          {/* The Approve action (POST /book -> automation job) lands here in Phase 3, P3-T7. */}
+          {activeJob ? (
+            <p>
+              <Link to={`/s/${shareToken}/jobs/${activeJob.id}`}>
+                View booking progress ({activeJob.status}) →
+              </Link>
+            </p>
+          ) : (
+            <button type="button" onClick={approveBooking} disabled={busy}>
+              Approve &amp; book "{recommendedOption?.title}"
+            </button>
+          )}
         </div>
       )}
     </div>

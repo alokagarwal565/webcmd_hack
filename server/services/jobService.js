@@ -16,6 +16,18 @@ export async function insertJob({ sessionId, optionId }) {
   return rows[0];
 }
 
+// Not in §11.2's endpoint table under this exact name, but required for
+// P3-T7's ticket view — §11.2 lists `GET /api/sessions/:shareToken/ticket`
+// with no service backing it yet. Same gap-fill pattern as P1-T6's GET
+// preferences: the field is documented, the read path wasn't wired.
+export async function getTicketBySession(sessionId) {
+  const { rows } = await pool.query(
+    'SELECT * FROM tickets WHERE session_id = $1 ORDER BY created_at DESC LIMIT 1',
+    [sessionId]
+  );
+  return rows[0] ?? null;
+}
+
 export async function getJobById(jobId) {
   const { rows } = await pool.query('SELECT * FROM automation_jobs WHERE id = $1', [jobId]);
   return rows[0] ?? null;
