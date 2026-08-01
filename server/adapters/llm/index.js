@@ -6,25 +6,11 @@
 // map — no service file changes.
 import { config } from '../../config.js';
 import { createDeepSeekAdapter } from './deepseek.js';
-
-// Placeholder factory until P2-T3 registers the real Gemini adapter. Kept
-// here (rather than left absent) so an unknown provider NAME still fails
-// distinctly from a known-but-unimplemented one during incremental build-out.
-function notImplemented(name) {
-  return {
-    name,
-    async generateStructured() {
-      throw new Error(`[llm] Provider "${name}" has no adapter implementation yet.`);
-    },
-    async generateText() {
-      throw new Error(`[llm] Provider "${name}" has no adapter implementation yet.`);
-    },
-  };
-}
+import { createGeminiAdapter } from './gemini.js';
 
 const factories = new Map([
   ['deepseek', createDeepSeekAdapter],
-  ['gemini', () => notImplemented('gemini')],
+  ['gemini', createGeminiAdapter],
 ]);
 
 const instances = new Map();
