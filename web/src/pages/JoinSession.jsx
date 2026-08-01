@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiClient } from '../lib/apiClient.js';
 import { getParticipant, saveParticipant } from '../lib/storage.js';
+import { PageShell, Card, TextField, Button, Badge, Avatar, Spinner } from '../components/ui/index.js';
+import './JoinSession.css';
 
 export default function JoinSession() {
   const { shareToken } = useParams();
@@ -10,6 +12,7 @@ export default function JoinSession() {
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [joining, setJoining] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,6 +34,7 @@ export default function JoinSession() {
   async function handleJoin(e) {
     e.preventDefault();
     setError(null);
+    setJoining(true);
     try {
       const data = await apiClient.post(`/api/sessions/${shareToken}/participants`, {
         displayName,
@@ -44,54 +48,70 @@ export default function JoinSession() {
       setParticipant(record);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setJoining(false);
     }
   }
 
   if (loading) {
-    return <div style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>Loading…</div>;
+    return (
+      <PageShell maxWidth="sm">
+        <div className="join-session-loading">
+          <Spinner />
+        </div>
+      </PageShell>
+    );
   }
 
   if (error && !detail) {
     return (
-      <div style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
+      <PageShell maxWidth="sm">
         <h1>SeatSync</h1>
-        <p style={{ color: 'crimson' }}>{error}</p>
-      </div>
+        <Card>
+          <p className="form-error">{error}</p>
+        </Card>
+      </PageShell>
     );
   }
 
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem', maxWidth: 480 }}>
-      <h1>{detail.session.title}</h1>
-      {detail.session.city && <p>{detail.session.city}</p>}
+    <PageShell maxWidth="sm">
+      <div className="join-session-header">
+        <h1>{detail.session.title}</h1>
+        {detail.session.city && <Badge tone="neutral">{detail.session.city}</Badge>}
+      </div>
 
       {participant ? (
-        <>
-          <p>
-            Welcome back, <strong>{participant.displayName}</strong>. You're in.
-          </p>
-          <p>
-            <Link to={`/s/${shareToken}/lobby`}>Go to the lobby</Link>
-          </p>
-        </>
-      ) : (
-        <form onSubmit={handleJoin}>
-          <div style={{ marginBottom: '1rem' }}>
-            <label>
-              Your name
-              <input
-                required
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Your name"
-                style={{ display: 'block', width: '100%', padding: '0.5rem' }}
-              />
-            </label>
+        <Card>
+          <div className="join-session-welcome">
+            <Avatar name={participant.displayName} size="md" />
+            <p>
+              Welcome back, <strong>{participant.displayName}</strong>. You're in.
+            </p>
           </div>
-          {error && <p style={{ color: 'crimson' }}>{error}</p>}
-          <button type="submit">Join</button>
-        </form>
+          <Link to={`/s/${shareToken}/lobby`}>
+            <Button variant="secondary" fullWidth>
+              Go to the lobby
+            </Button>
+          </Link>
+        </Card>
+      ) : (
+        <Card padding="lg">
+          <form onSubmit={handleJoin} className="join-session-form">
+            <TextField
+              label="Your name"
+              required
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Your name"
+            />
+            {error && <p className="form-error">{error}</p>}
+            <Button type="submit" variant="primary" loading={joining} fullWidth>
+              Join
+            </Button>
+          </form>
+        </Card>
       )}
-    </div>
+    </PageShell>
   );
 }

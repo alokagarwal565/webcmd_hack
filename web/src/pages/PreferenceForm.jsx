@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { apiClient } from '../lib/apiClient.js';
 import { getParticipant } from '../lib/storage.js';
 import AvailabilityWindows, { toLocalInputValue } from '../components/AvailabilityWindows.jsx';
+import { PageShell, Card, TextField, Textarea, Checkbox, Button, Spinner } from '../components/ui/index.js';
+import './PreferenceForm.css';
 
 export default function PreferenceForm() {
   const { shareToken } = useParams();
@@ -11,6 +13,7 @@ export default function PreferenceForm() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [budgetCeiling, setBudgetCeiling] = useState('');
   const [seatClass, setSeatClass] = useState('');
@@ -72,6 +75,7 @@ export default function PreferenceForm() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
+    setSaving(true);
     try {
       const body = {};
       if (budgetCeiling !== '') body.budgetCeiling = Number(budgetCeiling);
@@ -94,31 +98,47 @@ export default function PreferenceForm() {
       setSubmitted(true);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setSaving(false);
     }
   }
 
   if (loading) {
-    return <div style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>Loading…</div>;
+    return (
+      <PageShell maxWidth="sm">
+        <div className="preference-form-loading">
+          <Spinner />
+        </div>
+      </PageShell>
+    );
   }
 
   if (error && !participant) {
     return (
-      <div style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
-        <p style={{ color: 'crimson' }}>{error}</p>
-        <Link to={`/s/${shareToken}`}>Go to join page</Link>
-      </div>
+      <PageShell maxWidth="sm">
+        <Card>
+          <p className="form-error">{error}</p>
+          <Link to={`/s/${shareToken}`} className="link-arrow">
+            Go to join page
+          </Link>
+        </Card>
+      </PageShell>
     );
   }
 
   if (submitted) {
     return (
-      <div style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
-        <h1>Preferences saved</h1>
-        <p>Thanks, {participant.displayName}. You can come back and change these any time.</p>
-        <button type="button" onClick={() => setSubmitted(false)}>
-          Edit again
-        </button>
-      </div>
+      <PageShell maxWidth="sm">
+        <Card>
+          <h1 className="preference-form-confirm-title">Preferences saved</h1>
+          <p className="preference-form-confirm-text">
+            Thanks, {participant.displayName}. You can come back and change these any time.
+          </p>
+          <Button variant="secondary" onClick={() => setSubmitted(false)}>
+            Edit again
+          </Button>
+        </Card>
+      </PageShell>
     );
   }
 
@@ -126,70 +146,47 @@ export default function PreferenceForm() {
   const dateMax = session.dateTo ? `${session.dateTo}T23:59` : undefined;
 
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem', maxWidth: 480 }}>
-      <h1>{session.title}</h1>
-      <p>Your preferences — everything is optional.</p>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>
-            Budget ceiling (per person)
-            <input
-              type="number"
-              min="1"
-              value={budgetCeiling}
-              onChange={(e) => setBudgetCeiling(e.target.value)}
-              style={{ display: 'block', width: '100%', padding: '0.5rem' }}
-            />
-          </label>
-        </div>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>
-            Seat class
-            <input
-              value={seatClass}
-              onChange={(e) => setSeatClass(e.target.value)}
-              placeholder="premium, recliner, …"
-              style={{ display: 'block', width: '100%', padding: '0.5rem' }}
-            />
-          </label>
-        </div>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>
-            <input
-              type="checkbox"
-              checked={seatsTogether}
-              onChange={(e) => setSeatsTogether(e.target.checked)}
-            />{' '}
-            We should sit together
-          </label>
-        </div>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>
-            Preferred location / cinema
-            <input
-              value={preferredLocation}
-              onChange={(e) => setPreferredLocation(e.target.value)}
-              style={{ display: 'block', width: '100%', padding: '0.5rem' }}
-            />
-          </label>
-        </div>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>
-            Notes
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              style={{ display: 'block', width: '100%', padding: '0.5rem' }}
-            />
-          </label>
-        </div>
-        <div style={{ marginBottom: '1rem' }}>
-          <p>When are you free?</p>
-          <AvailabilityWindows windows={windows} onChange={setWindows} min={dateMin} max={dateMax} />
-        </div>
-        {error && <p style={{ color: 'crimson' }}>{error}</p>}
-        <button type="submit">Save preferences</button>
-      </form>
-    </div>
+    <PageShell maxWidth="sm">
+      <div>
+        <h1>{session.title}</h1>
+        <p>Your preferences — everything is optional.</p>
+      </div>
+      <Card padding="lg">
+        <form onSubmit={handleSubmit} className="preference-form">
+          <TextField
+            label="Budget ceiling (per person)"
+            type="number"
+            min="1"
+            value={budgetCeiling}
+            onChange={(e) => setBudgetCeiling(e.target.value)}
+          />
+          <TextField
+            label="Seat class"
+            value={seatClass}
+            onChange={(e) => setSeatClass(e.target.value)}
+            placeholder="premium, recliner, …"
+          />
+          <Checkbox
+            label="We should sit together"
+            checked={seatsTogether}
+            onChange={(e) => setSeatsTogether(e.target.checked)}
+          />
+          <TextField
+            label="Preferred location / cinema"
+            value={preferredLocation}
+            onChange={(e) => setPreferredLocation(e.target.value)}
+          />
+          <Textarea label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
+          <div className="preference-form-availability">
+            <h2>When are you free?</h2>
+            <AvailabilityWindows windows={windows} onChange={setWindows} min={dateMin} max={dateMax} />
+          </div>
+          {error && <p className="form-error">{error}</p>}
+          <Button type="submit" variant="primary" loading={saving} fullWidth>
+            Save preferences
+          </Button>
+        </form>
+      </Card>
+    </PageShell>
   );
 }

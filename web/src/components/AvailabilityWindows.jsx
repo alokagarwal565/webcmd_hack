@@ -1,6 +1,8 @@
 // Repeatable local-datetime window pairs. Values are kept as
 // datetime-local strings (local time) while editing; the page converts to
 // UTC ISO once, at the submit boundary (R13 — never store/pass local strings).
+import { TextField, Button } from './ui/index.js';
+import './AvailabilityWindows.css';
 
 export function toLocalInputValue(isoString) {
   if (!isoString) return '';
@@ -26,31 +28,35 @@ export default function AvailabilityWindows({ windows, onChange, min, max }) {
   }
 
   return (
-    <div>
+    <div className="availability-windows">
       {windows.map((w, i) => (
-        <div key={i} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-          <input
+        <div key={i} className="availability-window-row">
+          <TextField
+            label="Start"
+            hideLabel
             type="datetime-local"
             value={w.start}
             min={min}
             max={max}
             onChange={(e) => updateWindow(i, 'start', e.target.value)}
           />
-          <input
+          <TextField
+            label="End"
+            hideLabel
             type="datetime-local"
             value={w.end}
             min={min}
             max={max}
             onChange={(e) => updateWindow(i, 'end', e.target.value)}
           />
-          <button type="button" onClick={() => removeWindow(i)}>
+          <Button variant="ghost" size="sm" onClick={() => removeWindow(i)}>
             Remove
-          </button>
+          </Button>
         </div>
       ))}
-      <button type="button" onClick={addWindow}>
+      <Button variant="secondary" size="sm" onClick={addWindow}>
         + Add a time window
-      </button>
+      </Button>
     </div>
   );
 }

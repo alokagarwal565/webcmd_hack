@@ -1,0 +1,28 @@
+.join-session-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-12) 0;
+}
+
+.join-session-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.join-session-welcome {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.join-session-welcome p {
+  color: var(--text-primary);
+}
+
+.join-session-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}

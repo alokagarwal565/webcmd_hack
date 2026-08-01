@@ -1,0 +1,59 @@
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  text-align: left;
+  width: 100%;
+}
+
+.ui-input,
+.ui-textarea {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  min-height: 44px;
+  width: 100%;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.ui-input::placeholder,
+.ui-textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+.ui-input:focus,
+.ui-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.ui-input-error {
+  border-color: var(--danger-border);
+}
+
+.ui-field-hint {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+/* Native date/datetime-local picker icon — tint to match dark surfaces */
+.ui-input[type='date']::-webkit-calendar-picker-indicator,
+.ui-input[type='datetime-local']::-webkit-calendar-picker-indicator {
+  filter: invert(0.6);
+  cursor: pointer;
+}
+
+@media (prefers-color-scheme: light) {
+  .ui-input[type='date']::-webkit-calendar-picker-indicator,
+  .ui-input[type='datetime-local']::-webkit-calendar-picker-indicator {
+    filter: none;
+  }
+}
