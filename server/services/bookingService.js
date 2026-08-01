@@ -1,14 +1,7 @@
 import { pool } from '../db/pool.js';
 import { AppError } from '../lib/AppError.js';
-import { tokensMatch } from '../lib/tokens.js';
-import { getSessionByShareToken } from './sessionService.js';
+import { getSessionByShareToken, assertOrganizer } from './sessionService.js';
 import { insertJob } from './jobService.js';
-
-function assertOrganizer(session, organizerToken) {
-  if (!tokensMatch(session.organizer_token, organizerToken || '')) {
-    throw new AppError('INVALID_TOKEN', 'A valid organizer token is required.', 403);
-  }
-}
 
 async function getActiveJob(sessionId) {
   const { rows } = await pool.query(

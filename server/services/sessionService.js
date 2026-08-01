@@ -1,5 +1,5 @@
 import { pool } from '../db/pool.js';
-import { generateToken } from '../lib/tokens.js';
+import { generateToken, tokensMatch } from '../lib/tokens.js';
 import { AppError } from '../lib/AppError.js';
 
 function toPublicParticipant(row) {
@@ -45,6 +45,20 @@ export async function createSession({ title, activityType, city, dateFrom, dateT
 export async function getSessionByShareToken(shareToken) {
   const { rows } = await pool.query('SELECT * FROM sessions WHERE share_token = $1', [shareToken]);
   return rows[0] ?? null;
+}
+
+export async function getSessionById(sessionId) {
+  const { rows } = await pool.query('SELECT * FROM sessions WHERE id = $1', [sessionId]);
+  return rows[0] ?? null;
+}
+
+// Single source of truth for the organizer check (§21.1 rule 7) — every
+// mutation that requires organizer authority calls this rather than
+// hand-rolling a token comparison.
+export function assertOrganizer(session, organizerToken) {
+  if (!tokensMatch(session.organizer_token, organizerToken || '')) {
+    throw new AppError('INVALID_TOKEN', 'A valid organizer token is required.', 403);
+  }
 }
 
 // Join by link with a display name (FR-1.3/1.4). Duplicate names are allowed —

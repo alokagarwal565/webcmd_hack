@@ -1,5 +1,7 @@
 import { pool } from '../db/pool.js';
 import { logger } from '../lib/logger.js';
+import { AppError } from '../lib/AppError.js';
+import { getSessionById, assertOrganizer } from './sessionService.js';
 
 const STUCK_THRESHOLD_MINUTES = 10;
 
@@ -65,6 +67,52 @@ export async function getJobEvents(jobId) {
     [jobId]
   );
   return rows;
+}
+
+// GET is public — the whole group watches a job's progress (§ P3-T3 notes).
+export async function getJobDetail(jobId) {
+  const job = await getJobById(jobId);
+  if (!job) return null;
+  const events = await getJobEvents(jobId);
+  return { job, events };
+}
+
+async function assertOrganizerForJob(job, organizerToken) {
+  const session = await getSessionById(job.session_id);
+  assertOrganizer(session, organizerToken);
+}
+
+// resume/cancel are organizer-only mutations (§ P3-T3 notes) — GET is public.
+export async function resumeJob(jobId, organizerToken) {
+  const job = await getJobById(jobId);
+  if (!job) {
+    throw new AppError('JOB_NOT_FOUND', 'No job matches this id.', 404);
+  }
+  await assertOrganizerForJob(job, organizerToken);
+
+  if (job.status !== 'awaiting_human') {
+    throw new AppError('INVALID_STATE', 'Only a job awaiting a human step can be resumed.', 409);
+  }
+
+  const updated = await transitionJob(jobId, { status: 'running', humanActionNeeded: null });
+  await logJobEvent(jobId, { step: job.current_step, level: 'info', message: 'Resumed by organizer' });
+  return updated;
+}
+
+export async function cancelJob(jobId, organizerToken) {
+  const job = await getJobById(jobId);
+  if (!job) {
+    throw new AppError('JOB_NOT_FOUND', 'No job matches this id.', 404);
+  }
+  await assertOrganizerForJob(job, organizerToken);
+
+  if (!['queued', 'running', 'awaiting_human'].includes(job.status)) {
+    throw new AppError('INVALID_STATE', 'Only an active job can be cancelled.', 409);
+  }
+
+  const updated = await transitionJob(jobId, { status: 'cancelled', humanActionNeeded: null });
+  await logJobEvent(jobId, { step: job.current_step, level: 'info', message: 'Cancelled by organizer' });
+  return updated;
 }
 
 // §14.6 recovery: a job stuck `running` past this threshold means the Runner
