@@ -1,8 +1,8 @@
 // server/adapters/booking/district.js — the District read adapter (§14.1,
-// §17.1, P2-T7). Maps a ConstraintSet onto the verified `district search`/
-// `listings`/`showtimes` commands and normalizes the response to the
-// BookingProvider shape. Only the verified flags in §14.1 are used — no
-// invented options.
+// §17.1, P2-T7) plus the seat-selection call (§14.1, P3-T4). Maps a
+// ConstraintSet onto the verified `district search`/`listings`/`showtimes`/
+// `seats` commands and normalizes the response. Only the verified flags in
+// §14.1 are used — no invented options.
 import { webcmdExec } from './webcmdExec.js';
 
 function toHHMM(iso) {
@@ -95,4 +95,69 @@ export function createDistrictAdapter() {
       return options;
     },
   };
+}
+
+// `district seats`/`checkout` accept the `show` argument as either a
+// seat-layout URL, OR a bare showId paired with --format-id AND --content-id
+// (confirmed by live CLI runs: a showId-shaped string alone errors demanding
+// --format-id; a valid --format-id then errors demanding --content-id).
+// `contentId` never appears in `showtimes`'s or `seats`'s own OUTPUT columns
+// — but reading the installed adapter's source directly (`district/
+// showtimes.js`, the command that PRODUCES the `url` field) confirms `url`
+// is built internally as `${BASE}/movies/seat-layout/${formatId}?...&
+// contentid=${contentId}&...` — i.e. every real showtimes row's `url`
+// already embeds a valid contentId in its query string. So `url` is not a
+// workaround for a missing field, it IS the documented seat-layout-URL path
+// through §14.1, and is always preferred here. The showId+format-id+
+// content-id path is kept only as a fallback for a hypothetical provider
+// response that omits `url`; content-id has no other source and that path
+// cannot be constructed if it's missing.
+// Sandbox caveat: `district.in` is unreachable here (browser-backed commands
+// time out regardless of parameters — the same limitation Branch B hit), so
+// this could not be verified against a live-captured row, only against the
+// adapter's source code and a synthetic fixture (which uses an unrelated
+// movie-listing URL shape, confirmed live to fail the CLI's own seat-layout
+// URL format check — expected, since that fixture value was never meant to
+// be a real seat-layout link).
+export function resolveShowArgs(option) {
+  const raw = option?.raw || {};
+  if (raw.url) {
+    return { show: raw.url, extraArgs: [] };
+  }
+  const extraArgs = [];
+  if (raw.formatId) extraArgs.push('--format-id', raw.formatId);
+  if (raw.contentId) extraArgs.push('--content-id', raw.contentId);
+  return { show: raw.showId, extraArgs };
+}
+
+/**
+ * One `district seats` call for a specific set of seat-search parameters.
+ * Pure webcmd-invocation concern — the relaxation ladder that decides WHICH
+ * parameter sets to try lives in server/runner/steps/selectSeats.js, kept
+ * provider-agnostic in principle even though only District exists today.
+ * @param {object} option - a BookingOption (needs option.raw.url or showId)
+ * @param {{count: number, maxPrice?: number|null, seatClass?: string|null, together?: boolean, jobId?: string}} params
+ * @returns {Promise<Array<{seat: string, price: number|null, seatClass: string|null}>>}
+ */
+export async function queryDistrictSeats(option, { count, maxPrice, seatClass, together, jobId }) {
+  const { show, extraArgs } = resolveShowArgs(option);
+  const args = [show, ...extraArgs, '--count', String(count)];
+  if (typeof maxPrice === 'number') args.push('--max-price', String(maxPrice));
+  if (seatClass) args.push('--class', seatClass);
+  if (together) args.push('--together', 'true');
+
+  const rows = await webcmdExec({
+    adapter: 'district',
+    command: 'seats',
+    args,
+    browser: true,
+    jobId,
+    step: 'select_seats',
+  });
+
+  return (Array.isArray(rows) ? rows : []).map((row) => ({
+    seat: row.seat ?? null,
+    price: typeof row.price === 'number' ? row.price : null,
+    seatClass: row.seatClass ?? null,
+  }));
 }
