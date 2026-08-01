@@ -1,19 +1,13 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
-function Home() {
-  return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
-      <h1>SeatSync</h1>
-      <p>Group booking without the group-chat chaos.</p>
-    </div>
-  );
-}
+import CreateSession from './pages/CreateSession.jsx';
+import JoinSession from './pages/JoinSession.jsx';
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<CreateSession />} />
+        <Route path="/s/:shareToken" element={<JoinSession />} />
       </Routes>
     </BrowserRouter>
   );
