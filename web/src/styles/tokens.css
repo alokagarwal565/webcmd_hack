@@ -1,0 +1,129 @@
+/* Design tokens — dark-default, light override via prefers-color-scheme.
+   Every primitive and page reads colors/spacing/type ONLY through these
+   custom properties; nothing hardcodes a hex value outside this file. */
+
+:root {
+  color-scheme: dark light;
+
+  /* Surfaces */
+  --bg-canvas: #0a0a0f;
+  --bg-surface: #131319;
+  --bg-surface-raised: #1b1b24;
+  --bg-overlay: rgba(10, 10, 15, 0.72);
+
+  /* Borders */
+  --border-subtle: #24242f;
+  --border-default: #33333f;
+  --border-strong: #46465a;
+
+  /* Text */
+  --text-primary: #f5f4f8;
+  --text-secondary: #a8a6b8;
+  --text-tertiary: #6f6d81;
+  --text-on-accent: #0a0a0f;
+
+  /* Accent (violet) */
+  --accent: #a855f7;
+  --accent-hover: #bd7bfb;
+  --accent-active: #9333ea;
+  --accent-bg: rgba(168, 85, 247, 0.12);
+  --accent-border: rgba(168, 85, 247, 0.4);
+  --accent-glow: rgba(168, 85, 247, 0.45);
+
+  /* Secondary accent — reserved for the AI-processing gradient only */
+  --accent-2: #22d3ee;
+  --gradient-ai: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+
+  /* Semantic */
+  --success: #34d399;
+  --success-bg: rgba(52, 211, 153, 0.12);
+  --success-border: rgba(52, 211, 153, 0.35);
+  --warning: #fbbf24;
+  --warning-bg: rgba(251, 191, 36, 0.12);
+  --warning-border: rgba(251, 191, 36, 0.35);
+  --danger: #fb7185;
+  --danger-bg: rgba(251, 113, 133, 0.12);
+  --danger-border: rgba(251, 113, 133, 0.35);
+
+  /* Spacing (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* Shadow / glow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.55);
+  --shadow-accent-glow: 0 0 0 1px var(--accent-border), 0 8px 32px var(--accent-glow);
+
+  /* Typography */
+  --font-heading: 'Space Grotesk', system-ui, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', system-ui, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.5rem;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 400ms;
+
+  font-size: 18px;
+}
+
+@media (max-width: 1024px) {
+  :root {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-canvas: #f7f6fb;
+    --bg-surface: #ffffff;
+    --bg-surface-raised: #f1eef9;
+    --bg-overlay: rgba(23, 21, 31, 0.5);
+
+    --border-subtle: #e6e3ee;
+    --border-default: #d9d5e6;
+    --border-strong: #c2bcd6;
+
+    --text-primary: #17151f;
+    --text-secondary: #52506a;
+    --text-tertiary: #837f99;
+    --text-on-accent: #ffffff;
+
+    --accent: #8b2fe0;
+    --accent-hover: #7521c9;
+    --accent-active: #6516ab;
+    --accent-bg: rgba(139, 47, 224, 0.08);
+    --accent-border: rgba(139, 47, 224, 0.3);
+    --accent-glow: rgba(139, 47, 224, 0.25);
+
+    --shadow-sm: 0 1px 2px rgba(23, 21, 31, 0.06);
+    --shadow-md: 0 8px 24px rgba(23, 21, 31, 0.08);
+    --shadow-lg: 0 16px 48px rgba(23, 21, 31, 0.12);
+  }
+}

@@ -1,0 +1,50 @@
+.ui-meter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ui-meter-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+}
+
+.ui-meter-label {
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.ui-meter-value {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-meter-track {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface-raised);
+  overflow: hidden;
+}
+
+.ui-meter-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--gradient-ai);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+.ui-meter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3) var(--space-4);
+}
+
+@media (max-width: 420px) {
+  .ui-meter-grid {
+    grid-template-columns: 1fr;
+  }
+}

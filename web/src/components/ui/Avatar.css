@@ -1,0 +1,9 @@
+.ui-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  flex-shrink: 0;
+}

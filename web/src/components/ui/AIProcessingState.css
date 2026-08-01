@@ -1,0 +1,63 @@
+.ui-ai-processing {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--accent-border);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+.ui-ai-processing-glow {
+  position: absolute;
+  inset: -40%;
+  background: var(--gradient-ai);
+  opacity: 0.15;
+  filter: blur(30px);
+  animation: ui-ai-drift 4s var(--ease-in-out) infinite alternate;
+}
+
+@keyframes ui-ai-drift {
+  from {
+    transform: translateX(-15%) rotate(0deg);
+  }
+  to {
+    transform: translateX(15%) rotate(20deg);
+  }
+}
+
+.ui-ai-processing-dot {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gradient-ai);
+  flex-shrink: 0;
+  animation: ui-ai-pulse 1.2s var(--ease-in-out) infinite;
+}
+
+@keyframes ui-ai-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--accent-glow);
+  }
+  50% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+}
+
+.ui-ai-processing-text {
+  position: relative;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-ai-processing-glow,
+  .ui-ai-processing-dot {
+    animation: none;
+  }
+}
