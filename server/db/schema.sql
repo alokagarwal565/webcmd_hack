@@ -53,6 +53,15 @@ CREATE TABLE IF NOT EXISTS consensus (
     created_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- §10.1's CONSENSUS entity omits two fields §12.2/§13.7/§16.4 require the
+-- aggregation call to always produce: the organizer-facing prose summary,
+-- and the `llm_unavailable` flag the UI needs to show a plain-language
+-- notice instead of AI prose when both providers fail (§16.4 "the product
+-- books either way"). Added here, additively and idempotently, rather than
+-- silently dropping them in the P2-T8 persistence wiring.
+ALTER TABLE consensus ADD COLUMN IF NOT EXISTS summary text;
+ALTER TABLE consensus ADD COLUMN IF NOT EXISTS llm_unavailable boolean NOT NULL DEFAULT false;
+
 CREATE TABLE IF NOT EXISTS options (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id uuid NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,

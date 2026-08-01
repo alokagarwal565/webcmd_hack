@@ -18,7 +18,7 @@ export default function Lobby() {
     );
   }
 
-  const { session, participants, counts } = data;
+  const { session, participants, counts, consensus } = data;
   const isOrganizer = Boolean(getOrganizerToken(session.id));
   const mine = getParticipant(session.id);
 
@@ -49,10 +49,19 @@ export default function Lobby() {
         </p>
       )}
 
+      {consensus && !isOrganizer && (
+        <p>
+          <Link to={`/s/${shareToken}/consensus`}>View recommendations →</Link>
+        </p>
+      )}
+
       {isOrganizer && (
         <div style={{ marginTop: '1.5rem', borderTop: '1px solid #ddd', paddingTop: '1rem' }}>
           <p style={{ color: '#666', fontSize: '0.9rem' }}>Organizer controls</p>
-          {/* Aggregate / approve actions land here in Phase 2/3. */}
+          <p>
+            <Link to={`/s/${shareToken}/consensus`}>Run aggregation / view recommendations →</Link>
+          </p>
+          {/* Approve action lands here in Phase 3, on ConsensusView (P3-T7). */}
         </div>
       )}
     </div>
