@@ -4,6 +4,7 @@ import { AppError } from '../lib/AppError.js';
 import { getSessionById, assertOrganizer } from './sessionService.js';
 
 const STUCK_THRESHOLD_MINUTES = 10;
+const AWAITING_HUMAN_TIMEOUT_MINUTES = 10;
 
 export async function insertJob({ sessionId, optionId }) {
   const { rows } = await pool.query(
@@ -151,6 +152,33 @@ export async function sweepStuckJobs() {
       message: 'Marked failed by startup sweep — stuck in running past the threshold.',
     });
     logger.warn({ event: 'job.transition', jobId: job.id, from: 'running', to: 'failed', reason: 'stuck_sweep' });
+  }
+  return rows;
+}
+
+// §14.3: "awaiting_human --> cancelled: timeout or cancel" — a pause beyond
+// this threshold cancels the job rather than leaving it (and the single-job
+// queue it blocks) waiting on a human who may never come back (§ P3-T6
+// acceptance criteria).
+export async function sweepExpiredHumanPauses() {
+  const { rows } = await pool.query(
+    `UPDATE automation_jobs
+     SET status = 'cancelled',
+         human_action_needed = NULL,
+         error_code = 'RUNTIME_UNAVAILABLE',
+         error_message = 'Awaiting-human pause exceeded the timeout without a resume; cancelled automatically.',
+         updated_at = now()
+     WHERE status = 'awaiting_human'
+       AND updated_at < now() - interval '${AWAITING_HUMAN_TIMEOUT_MINUTES} minutes'
+     RETURNING *`
+  );
+  for (const job of rows) {
+    await logJobEvent(job.id, {
+      step: job.current_step,
+      level: 'warn',
+      message: 'Cancelled automatically — awaiting-human pause exceeded the timeout.',
+    });
+    logger.warn({ event: 'job.transition', jobId: job.id, from: 'awaiting_human', to: 'cancelled', reason: 'human_timeout' });
   }
   return rows;
 }

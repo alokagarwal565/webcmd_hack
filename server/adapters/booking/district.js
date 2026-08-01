@@ -161,3 +161,26 @@ export async function queryDistrictSeats(option, { count, maxPrice, seatClass, t
     seatClass: row.seatClass ?? null,
   }));
 }
+
+// §14.1, P3-T6 — `district whoami`. Verified live in this sandbox: a
+// logged-out session makes whoami exit non-zero with an AUTH_REQUIRED-style
+// error rather than returning a clean `{logged_in: false}` object, so
+// callers must treat a thrown error the same as `logged_in: false`.
+export async function checkDistrictLogin(jobId) {
+  return webcmdExec({ adapter: 'district', command: 'whoami', args: [], jobId, step: 'login_check' });
+}
+
+// §14.1, P3-T6 — opens District's login flow in a foreground window so the
+// human can complete it. The ONLY path allowed to use `--window foreground`
+// (§ P3-T6 notes) — every other automation step stays background.
+export async function triggerDistrictLogin(jobId) {
+  return webcmdExec({
+    adapter: 'district',
+    command: 'login',
+    args: [],
+    browser: true,
+    window: 'foreground',
+    jobId,
+    step: 'login',
+  });
+}
