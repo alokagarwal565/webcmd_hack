@@ -2399,30 +2399,32 @@ Index of every task in Section 32, in execution order. **Update the Status colum
 **Overall progress**
 
 ```
-Total tasks: 47        ░░░░░░░░░░░░░░░░░░░░  0/47  (0%)
+Total tasks: 47        ██████░░░░░░░░░░░░░░  14/47  (30%)
 ```
 
 | Dashboard | Value |
 |---|---|
-| **Overall progress** | **0 / 47 tasks** (0%) |
-| **`[CORE]` critical path** | **0 / 21 tasks** (0%) — *the booking demo* |
-| **MVP completion (P0–P3)** | **0 / 28 tasks** (0%) |
+| **Overall progress** | **14 / 47 tasks** (30%) |
+| **`[CORE]` critical path** | **12 / 21 tasks** (57%) — *the booking demo* |
+| **MVP completion (P0–P3)** | **14 / 28 tasks** (50%) |
 | **Stretch completion (P4–P7)** | **0 / 19 tasks** (0%) |
-| **Current phase** | **P0 — Foundation** |
-| **Next task** | **P0-T1** — Repository scaffold & dual dev servers |
-| **Remaining `[CORE]` time** | **5 h 30 m** |
-| **Remaining MVP time** | **6 h 57 m** |
-| **Remaining total** | **10 h 53 m** |
-| **Demo readiness** | 🔴 **Not ready** — no runnable app yet |
+| **Current phase** | **P1 — Coordination** (Branch A, `feat/coordination-automation`, in progress) — **P2 — Intelligence already complete**, built in parallel on Branch B (`feat/intelligence`) and merged to `main` at commit `d9d4a1c` |
+| **Next task** | **P1-T1** — Token utilities & session creation (Branch A) · Branch B's next task after merge is **P3-T1** (job creation, the integration point that calls `aggregationService`/`recommendationService`) |
+| **Remaining `[CORE]` time** | **~2 h 20 m** (P1 core + P3 core) |
+| **Remaining MVP time** | **~3 h 40 m** (P1 + P3) |
+| **Remaining total** | **~7 h 42 m** |
+| **Demo readiness** | 🟡 **Services ready, not yet wired** — Phase 2's services exist and are fully tested, but nothing calls them until Branch A's P1 (sessions/preferences) lands and P3-T1 merges the two branches |
+
+> **Note on parallel branches:** this plan assumes strictly sequential phase execution, but the actual build split Phase 1 + Phase 3 (Branch A) from Phase 2 (Branch B) to run in parallel after P0. The Status columns below reflect actual repo state on `main`, not execution order — P2 is fully ✅ while P1/P3 are still ⬜, which the ladder below can't express as a single "current phase." See the branch-split rationale recorded in conversation context: Branch A owns sessions/jobs/UI; Branch B owns the LLM/booking-read/scoring services as pure functions; they meet at P3-T1.
 
 **Demo-readiness ladder** — the honest answer to "can we present right now?"
 
 | Gate | Requires | Status | What you can claim |
 |---|---|---|---|
-| 🔴 **Nothing** | — | ▶ **current** | — |
+| 🔴 **Nothing** | — | — | — |
 | 🟠 **Coordination demo** | P1-T7 | ⬜ | "Share one link; preferences collected privately" |
-| 🟡 **Intelligence demo** | P2-T8 | ⬜ | "AI reconciled the group and found real showtimes" |
-| 🟢 **Full demo** | P3-T7 | ⬜ | **"It books a real ticket."** 🎯 |
+| 🟡 **Intelligence demo** | P2-T8 | ✅ *(services only — not yet reachable via API/UI, pending Branch A's P1 + the P3-T1 merge)* | "AI reconciled the group and found real showtimes" |
+| 🟢 **Full demo** | P3-T7 | ▶ **current target** | **"It books a real ticket."** 🎯 |
 | 🔵 **Hardened demo** | P7-T4 | ⬜ | "…and it works offline" |
 
 **Live risk register** — see §29 for full mitigations.
@@ -2430,9 +2432,9 @@ Total tasks: 47        ░░░░░░░░░░░░░░░░░░░
 | Risk | Status | Trigger to watch |
 |---|---|---|
 | R1 District login expires | ⬜ Unverified | Run `webcmd district whoami` before demoing |
-| R2 Adapter breaks | ⬜ Unmitigated | Mitigated once P7-T4 fixtures exist |
-| R3 Time overrun | 🟡 **Active** | If P2 is unfinished at the 2 h mark, invoke §28.4 |
-| R14 Demo network failure | ⬜ Unmitigated | Mitigated once P7-T4 lands |
+| R2 Adapter breaks | 🟡 **Partially mitigated** | P2-T7 shipped a fixture adapter (`BOOKING_PROVIDER=fixture`) early as the read-provider's demo-safe fallback; full P7-T4 fixture-mode coverage (booking/checkout side) still open |
+| R3 Time overrun | 🟢 Resolved for P2 | Phase 2 complete; remaining exposure is now P1/P3 on Branch A |
+| R14 Demo network failure | 🟡 **Partially mitigated** | Same fixture adapter as R2 — `district search`/`showtimes` reads can run offline; live booking automation (P3) still requires the real site |
 
 ### 33.2 Task index
 
@@ -2443,12 +2445,12 @@ Total tasks: 47        ░░░░░░░░░░░░░░░░░░░
 
 | Task | Title | Wave | Pri | ETA | Deps | Status |
 |---|---|---|---|---|---|---|
-| P0-T1 | Repository scaffold & dual dev servers | `[CORE]` | P1 | 12m | — | ⬜ |
-| P0-T2 | Fail-closed configuration module | `[CORE]` | P1 | 12m | P0-T1 | ⬜ |
-| P0-T3 | Neon connection pool & health endpoint | `[CORE]` | P1 | 12m | P0-T2 | ⬜ |
-| P0-T4 | Database schema & apply script | `[CORE]` | P1 | 15m | P0-T3 | ⬜ |
-| P0-T5 | Middleware, logger, error envelope; React shell | `[CORE]` | P1 | 15m | P0-T3 | ⬜ |
-| P0-T6 | Request validation helper | `[MVP]` | P2 | 10m | P0-T5 | ⬜ |
+| P0-T1 | Repository scaffold & dual dev servers | `[CORE]` | P1 | 12m | — | ✅ |
+| P0-T2 | Fail-closed configuration module | `[CORE]` | P1 | 12m | P0-T1 | ✅ |
+| P0-T3 | Neon connection pool & health endpoint | `[CORE]` | P1 | 12m | P0-T2 | ✅ |
+| P0-T4 | Database schema & apply script | `[CORE]` | P1 | 15m | P0-T3 | ✅ |
+| P0-T5 | Middleware, logger, error envelope; React shell | `[CORE]` | P1 | 15m | P0-T3 | ✅ |
+| P0-T6 | Request validation helper | `[MVP]` | P2 | 10m | P0-T5 | ✅ |
 
 #### PHASE 1 — Coordination `[CORE]` · 106 min
 
@@ -2466,14 +2468,14 @@ Total tasks: 47        ░░░░░░░░░░░░░░░░░░░
 
 | Task | Title | Wave | Pri | ETA | Deps | Status |
 |---|---|---|---|---|---|---|
-| P2-T1 | LLMProvider port & registry | `[CORE]` | P1 | 12m | P0-T2 | ⬜ |
-| P2-T2 | DeepSeek adapter | `[CORE]` | P1 | 15m | P2-T1 | ⬜ |
-| P2-T3 | Gemini adapter | `[MVP]` | P2 | 12m | P2-T1 | ⬜ |
-| P2-T4 | Error classifier & failover wrapper | `[CORE]` | P1 | 18m | P2-T2, P2-T3 | ⬜ |
-| P2-T5 | Deterministic availability intersection | `[CORE]` | P1 | 18m | P1-T4 | ⬜ |
-| P2-T6 | Preference reconciliation with clamping | `[CORE]` | P1 | 18m | P2-T4, P2-T5 | ⬜ |
-| P2-T7 | BookingProvider port & District read adapter | `[CORE]` | P1 | 18m | P2-T6 | ⬜ |
-| P2-T8 | Scoring, ranking & consensus UI | `[CORE]` | P1 | 18m | P2-T7 | ⬜ |
+| P2-T1 | LLMProvider port & registry | `[CORE]` | P1 | 12m | P0-T2 | ✅ |
+| P2-T2 | DeepSeek adapter | `[CORE]` | P1 | 15m | P2-T1 | ✅ |
+| P2-T3 | Gemini adapter | `[MVP]` | P2 | 12m | P2-T1 | ✅ |
+| P2-T4 | Error classifier & failover wrapper | `[CORE]` | P1 | 18m | P2-T2, P2-T3 | ✅ |
+| P2-T5 | Deterministic availability intersection | `[CORE]` | P1 | 18m | P1-T4 | ✅ *(built as a pure function ahead of P1-T4 per the branch split — needs only the preference-row shape already fixed in §10.1, not the live route)* |
+| P2-T6 | Preference reconciliation with clamping | `[CORE]` | P1 | 18m | P2-T4, P2-T5 | ✅ |
+| P2-T7 | BookingProvider port & District read adapter | `[CORE]` | P1 | 18m | P2-T6 | ✅ |
+| P2-T8 | Scoring, ranking & consensus UI | `[CORE]` | P1 | 18m | P2-T7 | 🟡 **Service done, UI not built** — `recommendationService.js` complete and tested; `ConsensusView.jsx`/`OptionCard.jsx` intentionally left to Branch A/the merge, since Branch B does not touch the UI shell |
 
 #### PHASE 3 — Automation `[CORE]` · 106 min
 
