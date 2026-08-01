@@ -5,8 +5,9 @@
 // change. Adding OpenAI/Claude/Groq/Ollama later is one factory added to this
 // map — no service file changes.
 import { config } from '../../config.js';
+import { createDeepSeekAdapter } from './deepseek.js';
 
-// Placeholder factories until P2-T2/P2-T3 register the real adapters. Kept
+// Placeholder factory until P2-T3 registers the real Gemini adapter. Kept
 // here (rather than left absent) so an unknown provider NAME still fails
 // distinctly from a known-but-unimplemented one during incremental build-out.
 function notImplemented(name) {
@@ -22,7 +23,7 @@ function notImplemented(name) {
 }
 
 const factories = new Map([
-  ['deepseek', () => notImplemented('deepseek')],
+  ['deepseek', createDeepSeekAdapter],
   ['gemini', () => notImplemented('gemini')],
 ]);
 
