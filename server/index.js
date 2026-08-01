@@ -4,6 +4,7 @@ import { healthRouter } from './routes/health.js';
 import { sessionsRouter } from './routes/sessions.js';
 import { participantsRouter } from './routes/participants.js';
 import { preferencesRouter } from './routes/preferences.js';
+import { bookingRouter } from './routes/booking.js';
 import { requestId } from './middleware/requestId.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { startRunner } from './runner/index.js';
@@ -35,6 +36,7 @@ app.use('/api', healthRouter);
 app.use('/api', sessionsRouter);
 app.use('/api/sessions/:shareToken/participants', participantsRouter);
 app.use('/api/sessions/:shareToken/preferences', preferencesRouter);
+app.use('/api/sessions/:shareToken/book', bookingRouter);
 
 if (config.NODE_ENV !== 'production') {
   app.get('/api/_throw', () => {
