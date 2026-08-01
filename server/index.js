@@ -3,6 +3,7 @@ import { config } from './config.js';
 import { healthRouter } from './routes/health.js';
 import { sessionsRouter } from './routes/sessions.js';
 import { participantsRouter } from './routes/participants.js';
+import { preferencesRouter } from './routes/preferences.js';
 import { requestId } from './middleware/requestId.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -17,6 +18,7 @@ app.get('/', (req, res) => {
 app.use('/api', healthRouter);
 app.use('/api', sessionsRouter);
 app.use('/api/sessions/:shareToken/participants', participantsRouter);
+app.use('/api/sessions/:shareToken/preferences', preferencesRouter);
 
 if (config.NODE_ENV !== 'production') {
   app.get('/api/_throw', () => {
