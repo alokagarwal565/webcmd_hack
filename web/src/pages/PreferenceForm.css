@@ -1,0 +1,26 @@
+.preference-form-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-12) 0;
+}
+
+.preference-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.preference-form-availability {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.preference-form-confirm-title {
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-2);
+}
+
+.preference-form-confirm-text {
+  margin-bottom: var(--space-4);
+}

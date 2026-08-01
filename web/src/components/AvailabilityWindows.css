@@ -1,0 +1,20 @@
+.availability-windows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.availability-window-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-end;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .availability-window-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
