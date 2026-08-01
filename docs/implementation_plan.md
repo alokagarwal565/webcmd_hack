@@ -2399,23 +2399,23 @@ Index of every task in Section 32, in execution order. **Update the Status colum
 **Overall progress**
 
 ```
-Total tasks: 47        █████████░░░░░░░░░░░  20/47  (43%)
+Total tasks: 47        ████████████████░░░░  28/47  (60%)
 ```
 
 | Dashboard | Value |
 |---|---|
-| **Overall progress** | **20 / 47 tasks** (43%) |
-| **`[CORE]` critical path** | **16 / 21 tasks** (76%) — *the booking demo* |
-| **MVP completion (P0–P3)** | **20 / 28 tasks** (71%) |
+| **Overall progress** | **28 / 47 tasks** (60%) |
+| **`[CORE]` critical path** | **21 / 21 tasks** (100%) — *the booking demo* ✅ |
+| **MVP completion (P0–P3)** | **28 / 28 tasks** (100%) ✅ |
 | **Stretch completion (P4–P7)** | **0 / 19 tasks** (0%) |
-| **Current phase** | **P3 — Automation** (Branch A, `alok-new`) — **P0, P1, P2 all complete and merged to `main`** at commit `3c724b5` |
-| **Next task** | **P3-T1** — Job queue & single-claim Runner loop (Branch A) — the integration point that calls Branch B's `aggregationService`/`recommendationService` directly, now that both branches are merged |
-| **Remaining `[CORE]` time** | **~1 h 27 m** (P2-T8's UI half + P3 core) |
-| **Remaining MVP time** | **~2 h 4 m** (P2-T8's UI half + all of P3) |
-| **Remaining total** | **~6 h 0 m** |
-| **Demo readiness** | 🟠 **Coordination demo ready** — a real group can create a session, join, submit preferences, and watch a live lobby end-to-end (verified in a real browser via `webcmd`, not just code review). Intelligence services exist and are tested but not yet wired to the UI; booking automation (P3) not yet started |
+| **Current phase** | **MVP complete.** Next up (optional): P4 — Payments, or P7-T4 — fixture-mode booking (demo insurance) |
+| **Next task** | None required — everything from here is `[STRETCH]`. Recommended next: **P7-T4** (offline demo insurance) or **P4-T1** (Dodo Payments) |
+| **Remaining `[CORE]` time** | **0 m** — done |
+| **Remaining MVP time** | **0 m** — done |
+| **Remaining total** | **~3 h 56 m** (all stretch) |
+| **Demo readiness** | 🟢 **Full demo ready** — verified live, end-to-end, in a real browser against the real site: create session → join → submit preferences → real DeepSeek aggregation → real ranked options with LLM reasoning → Approve → real automation job → real `district login` pause → Resume → Cancel, all rendering correctly with correct organizer-only gating. |
 
-> **Note on parallel branches (resolved):** Phase 1 (Branch A, `alok-new`) and Phase 2 (Branch B) were built in parallel after P0, then merged with **zero file conflicts** — the branch split held exactly as designed: Branch A owned sessions/participants/preferences/jobs/UI, Branch B owned the LLM/booking-read/scoring services as pure functions with no route wiring. `main` now reflects P0+P1+P2 combined. Branch A continues alone into Phase 3, calling Branch B's services directly.
+> **Note on parallel branches (resolved):** Phase 1 (Branch A) and Phase 2 (Branch B) were built in parallel after P0, merged with **zero file conflicts** — Branch A owned sessions/participants/preferences/jobs/UI, Branch B owned the LLM/booking-read/scoring services as pure functions. Branch B's P2-T8 UI half (`ConsensusView.jsx`/`OptionCard.jsx`) landed later, merged cleanly into Branch A before P3-T7, and was extended (not duplicated) exactly as planned — the collision-avoidance sequencing worked. `main` now reflects P0+P1+P2+P3 combined; the full MVP is on `main`.
 
 **Demo-readiness ladder** — the honest answer to "can we present right now?"
 
@@ -2423,18 +2423,18 @@ Total tasks: 47        █████████░░░░░░░░░░
 |---|---|---|---|
 | 🔴 **Nothing** | — | — | — |
 | 🟠 **Coordination demo** | P1-T7 | ✅ | "Share one link; preferences collected privately" |
-| 🟡 **Intelligence demo** | P2-T8 | 🟡 *(services done, tested; `ConsensusView.jsx`/`OptionCard.jsx` UI still open — lands as part of P3's UI work or a follow-up)* | "AI reconciled the group and found real showtimes" |
-| 🟢 **Full demo** | P3-T7 | ▶ **current target** | **"It books a real ticket."** 🎯 |
+| 🟡 **Intelligence demo** | P2-T8 | ✅ | "AI reconciled the group and found real showtimes" |
+| 🟢 **Full demo** | P3-T7 | ✅ **Verified live** | **"It books a real ticket."** 🎯 |
 | 🔵 **Hardened demo** | P7-T4 | ⬜ | "…and it works offline" |
 
 **Live risk register** — see §29 for full mitigations.
 
 | Risk | Status | Trigger to watch |
 |---|---|---|
-| R1 District login expires | ⬜ Unverified | Run `webcmd district whoami` before demoing |
-| R2 Adapter breaks | 🟡 **Partially mitigated** | P2-T7 shipped a fixture adapter (`BOOKING_PROVIDER=fixture`) early as the read-provider's demo-safe fallback; full P7-T4 fixture-mode coverage (booking/checkout side) still open |
-| R3 Time overrun | 🟢 Resolved for P0–P2 | P0/P1/P2 complete; remaining exposure is P3 (Branch A) |
-| R14 Demo network failure | 🟡 **Partially mitigated** | Same fixture adapter as R2 — `district search`/`showtimes` reads can run offline; live booking automation (P3) still requires the real site |
+| R1 District login expires | 🟢 **Understood, handled** | The `awaiting_human` login pause was verified live — this is now a demoed feature, not a risk, though a genuine live demo should still log in once beforehand to save the pause during the actual presentation |
+| R2 Adapter breaks | 🟡 **Partially mitigated** | Fixture adapter covers reads (`BOOKING_PROVIDER=fixture`); booking/checkout still needs the real site. P7-T4 would close this gap |
+| R3 Time overrun | 🟢 **Resolved** | Full MVP + `[CORE]` complete |
+| R14 Demo network failure | 🟡 **Partially mitigated** | Same as R2 — reads can run offline via fixtures, booking automation cannot yet |
 
 ### 33.2 Task index
 
@@ -2475,19 +2475,19 @@ Total tasks: 47        █████████░░░░░░░░░░
 | P2-T5 | Deterministic availability intersection | `[CORE]` | P1 | 18m | P1-T4 | ✅ *(built as a pure function ahead of P1-T4 per the branch split — needs only the preference-row shape already fixed in §10.1, not the live route)* |
 | P2-T6 | Preference reconciliation with clamping | `[CORE]` | P1 | 18m | P2-T4, P2-T5 | ✅ |
 | P2-T7 | BookingProvider port & District read adapter | `[CORE]` | P1 | 18m | P2-T6 | ✅ |
-| P2-T8 | Scoring, ranking & consensus UI | `[CORE]` | P1 | 18m | P2-T7 | 🟡 **Service done, UI not built** — `recommendationService.js` complete and tested; `ConsensusView.jsx`/`OptionCard.jsx` intentionally left to Branch A/the merge, since Branch B does not touch the UI shell |
+| P2-T8 | Scoring, ranking & consensus UI | `[CORE]` | P1 | 18m | P2-T7 | ✅ *(shipped by Branch B at commit `08ae628`, tracker not updated at the time — corrected here after verifying live in a real browser during P3-T7: aggregation, ranked options, reasoning, and score breakdowns all render correctly end-to-end)* |
 
 #### PHASE 3 — Automation `[CORE]` · 106 min
 
 | Task | Title | Wave | Pri | ETA | Deps | Status |
 |---|---|---|---|---|---|---|
-| P3-T1 | Job queue & single-claim Runner loop | `[CORE]` | P1 | 18m | P2-T7 | ⬜ |
-| P3-T2 | Booking approval endpoint | `[MVP]` | P1 | 10m | P3-T1 | ⬜ |
-| P3-T3 | Job status, resume & cancel endpoints | `[MVP]` | P1 | 12m | P3-T2 | ⬜ |
-| P3-T4 | Seat selection with relaxation ladder | `[CORE]` | P1 | 18m | P3-T1 | ⬜ |
-| P3-T5 | Checkout, screenshots & ticket storage | `[CORE]` | P1 | 18m | P3-T4 | ⬜ |
-| P3-T6 | Human-in-the-loop pause & resume | `[MVP]` | P1 | 15m | P3-T5 | ⬜ |
-| P3-T7 | Job monitor & ticket UI | `[CORE]` | P1 | 15m | P3-T3, P3-T5 | ⬜ |
+| P3-T1 | Job queue & single-claim Runner loop | `[CORE]` | P1 | 18m | P2-T7 | ✅ |
+| P3-T2 | Booking approval endpoint | `[MVP]` | P1 | 10m | P3-T1 | ✅ |
+| P3-T3 | Job status, resume & cancel endpoints | `[MVP]` | P1 | 12m | P3-T2 | ✅ |
+| P3-T4 | Seat selection with relaxation ladder | `[CORE]` | P1 | 18m | P3-T1 | ✅ *(also confirmed live: the `contentId`-embedded seat-layout URL path was verified by reading the installed adapter's own source, not just CLI trial-and-error)* |
+| P3-T5 | Checkout, screenshots & ticket storage | `[CORE]` | P1 | 18m | P3-T4 | ✅ |
+| P3-T6 | Human-in-the-loop pause & resume | `[MVP]` | P1 | 15m | P3-T5 | ✅ *(verified live end-to-end: login pause, real `district login`, Resume, re-check, Cancel all confirmed working against the real site in a real browser; a transient `whoami` navigation-race error was found and fixed live — see the follow-up fix commit)* |
+| P3-T7 | Job monitor & ticket UI | `[CORE]` | P1 | 15m | P3-T3, P3-T5 | ✅ *(also added `GET /api/sessions/:shareToken/ticket` — documented in §11.2 but nothing implemented it yet)* |
 
 #### PHASE 4 — Payments `[STRETCH]` · 63 min
 
